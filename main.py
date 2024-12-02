@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv()
 
@@ -19,8 +20,9 @@ xpath = {
     "save_login_not_now_button": "//div[contains(text(), 'Ahora no')]",
     "notification_not_now_button": "//button[contains(text(), 'Ahora no')]",
     "like_button": "//*[@aria-label='Me gusta']",
-    "modal": "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[2]/div/div[1]/section/main/div/header/section[3]/ul/li[2]/div/a",
+    "modal": "/html/body/div[6]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[2]",
     "cancel_unfollow_button": "//button[contains(text(), 'Cancel')]",
+    "followers_button": "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[2]/div/div[1]/section/main/div/header/section[3]/ul/li[2]/div/a"
 }
 
 css_selector = {
@@ -94,17 +96,18 @@ class InstaFollower:
         
         # Acount navigate
     def find_account(self, account_name):
-        WebDriverWait(self.driver, MIN_TIME_LOAD)
-
-        # Show followers of the selected account. 
+        print('Navegando al perfil')
         self.driver.get(f"https://www.instagram.com/{account_name}")
+        time.sleep(4)
 
     
-    def find_followers(self, account_name):
-        WebDriverWait(self.driver, MIN_TIME_LOAD)
-
-        # Show followers of the selected account. 
-        self.driver.get(f"https://www.instagram.com/{account_name}/followers/")
+    def find_followers(self):
+        print('Abriendo la lista de seguidores')
+        followers_button = WebDriverWait(self.driver, MAX_TIME_LOAD).until(
+            EC.element_to_be_clickable((By.XPATH, xpath["followers_button"]))
+        )
+        followers_button.click()
+        time.sleep(4)
 
         # The xpath of the modal that shows the followers will change over time. Update yours accordingly.
         modal = WebDriverWait(self.driver, MAX_TIME_LOAD).until(
@@ -128,8 +131,12 @@ class InstaFollower:
             except ElementClickInterceptedException:
                 cancel_button = self.driver.find_element(by=By.XPATH, value=xpath["cancel_unfollow_button"])
                 cancel_button.click()     
+                
+            print('Fin del proceso')
 
 bot = InstaFollower()
 bot.login()
-bot.find_followers("5amoljen")
+bot.find_account('5amoljen')
+bot.find_followers()
+bot.follow()
 bot.close_browser()
